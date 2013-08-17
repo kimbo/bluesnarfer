@@ -1,0 +1,15 @@
+Source: bluesnarfer
+Section: misc
+Priority: extra
+Maintainer: Mati Aharoni <muts@kali.org>
+Build-Depends: debhelper (>= 8.0.0),libbluetooth-dev
+Standards-Version: 3.9.3
+Homepage: http://www.alighieri.org/
+Vcs-Git: ssh://git@git.kali.org/packages/bluesnarfer.git
+Vcs-Browser: http://git.kali.org/gitweb/?p=packages/bluesnarfer.git;a=summary
+
+Package: bluesnarfer
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, bluez
+Description: A Bluesnarfing Utility
+ A bluetooth bluesnarfing Utility
