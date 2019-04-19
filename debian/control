@@ -5,8 +5,8 @@ Maintainer: Kali Developers <devel@kali.org>
 Build-Depends: debhelper (>= 8.0.0),libbluetooth-dev
 Standards-Version: 3.9.3
 Homepage: http://www.alighieri.org/
-Vcs-Git: ssh://git@git.kali.org/packages/bluesnarfer.git
-Vcs-Browser: http://git.kali.org/gitweb/?p=packages/bluesnarfer.git;a=summary
+Vcs-Git: https://gitlab.com/kalilinux/packages/bluesnarfer.git
+Vcs-Browser: https://gitlab.com/kalilinux/packages/bluesnarfer
 
 Package: bluesnarfer
 Architecture: any
