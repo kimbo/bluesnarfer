@@ -1,7 +1,7 @@
 Source: bluesnarfer
 Section: misc
 Priority: extra
-Maintainer: Mati Aharoni <muts@kali.org>
+Maintainer: Kali Developers <devel@kali.org>
 Build-Depends: debhelper (>= 8.0.0),libbluetooth-dev
 Standards-Version: 3.9.3
 Homepage: http://www.alighieri.org/
