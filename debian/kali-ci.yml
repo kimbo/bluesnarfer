@@ -1,0 +1,3 @@
+include:
+  - https://gitlab.com/kalilinux/tools/kali-ci-pipeline/raw/master/gitlab-ci/kali/templates.yml
+  - https://gitlab.com/kalilinux/tools/kali-ci-pipeline/raw/master/gitlab-ci/kali/pipeline-jobs.yml
