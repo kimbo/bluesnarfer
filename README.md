@@ -10,6 +10,13 @@ Here's a good reference I found for AT commands: https://www.sparkfun.com/datash
 Note that it's likely your phone doesn't support *ALL* of these,
 and it will probably show a prompt asking you to give permission for bluesnarfer to read your recently dialed calls.
 
+# License
+License is GPL-2+.
+
+License and copyright info can be found in [debian/copyright](
+https://github.com/kimbo/bluesnarfer/blob/kali/master/debian/copyright).
+
+
 # Original README
 
 \- HOW TO USE
