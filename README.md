@@ -1,14 +1,23 @@
+# Bluesnarfer
+
+>Bluesnarfing is the unauthorized access of information from a wireless device through a Bluetooth connection, often between phones, desktops, laptops, and PDAs (personal digital assistant).
+>\- https://en.wikipedia.org/wiki/Bluesnarfing
+
+Bluesnarfing is a fairly old attack. (First license in debian/copyright says 2007, so that gives you an idea).
+To my knowledge, all modern devices have at least some kind of protection against bluesnarfing.
+
+For example, I tested this with a Samsung Galaxy s7, and it prompted be to give permission to bluesnarfer to read my contacts, make calls, etc.
+
 # Demo
 
 Here's a short demo of bluesnarfer I did as part of a school project - https://asciinema.org/a/6e1rjk7V3eJL1qoA3kJRUKfh1.
 
 The trickiest part for me was figuring out which channel to use.
-Once you get that, you can test a bunch of AT commands.
+Once you get that, you can test a bunch of AT commands (read contacts, read recent calls, make calls, send text messages, etc).
 
 Here's a good reference I found for AT commands: https://www.sparkfun.com/datasheets/Cellular%20Modules/AT_Commands_Reference_Guide_r0.pdf
 
-Note that it's likely your phone doesn't support *ALL* of these,
-and it will probably show a prompt asking you to give permission for bluesnarfer to read your recently dialed calls.
+Note that it's likely your phone doesn't support all of the AT commands listed in the reference guide.
 
 # License
 License is GPL-2+.
