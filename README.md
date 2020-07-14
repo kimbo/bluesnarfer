@@ -5,9 +5,8 @@
 
 Bluesnarfing is a fairly old attack. (First license in debian/copyright says 2007, so that gives you an idea).
 To my knowledge, all modern devices have at least some kind of protection against bluesnarfing.
-
 For example, I tested this with a Samsung Galaxy s7, and it prompted be to give permission to bluesnarfer to read my contacts, make calls, etc.
-
+So at least it asked me for permission!
 
 # Installation
 
@@ -26,14 +25,14 @@ The fun part of this is actually doing some bluesnarfing (or just saying "bluesn
 
 I ran this on Ubuntu 18.04 and targetted my Samsung Galaxy s7, which worked well.
 
-First, you need to make sure you can reach the device. Connect them with bluetooth, then verify you can reach them using something like `l2ping`:
+First, you need to make sure you can reach the device from your computer. Connect your computer to your phone with Bluetooth, then verify you can reach it using something like `l2ping`:
 
 ```
 l2ping <MAC_ADDRESS>
 ```
 
 If you're having trouble finding the MAC_ADDRESS, usually you'll be able to see it in your bluetooth settings.
-I also like to use `bluetoothctl`. You can run `devices list` and it'll show you what devices are close by and what their MAC addresses are.
+I also like to use `bluetoothctl` and then `devices list` and it'll show you what devices have been picked up by the scanner or paired previously and what their MAC addresses are.
 
 Next, you run the `bluesnarfer` program. The general usage is
 
@@ -47,9 +46,9 @@ For example, to list device info, run
 ./bluesnarfer -b <MAC_ADDR> -i
 ```
 
-Once you get that, you can test a bunch of AT commands (read contacts, read recent calls, make calls, send text messages, etc).
+Once you get that working, you can test a bunch of AT commands (read contacts, read recent calls, make calls, send text messages, etc).
 Here's a good reference I found for AT commands: https://www.sparkfun.com/datasheets/Cellular%20Modules/AT_Commands_Reference_Guide_r0.pdf
-(Note that it's likely your phone doesn't support all of the AT commands listed in the reference guide.)
+(Note that your phone may not support all of the AT commands listed in the reference guide.)
 
 If running the above command doesn't work, you probably need to figure out the right channel to use.
 If I remember correctly, the default channel used is 17 or something.
@@ -59,9 +58,9 @@ To see what channels are available, I used the `sdptool`:
 sdptool browse --tree --l2cap <MAC_ADDRESS>
 ```
 
-Look around for something that looks like it might let you read information or make calls, send messages, etc.
-When in doubt, just check all of the channels.
-(Channel 2 worked on my Samsung Galaxy s7).
+Then I looked through the output for something that looks like it might let you read information or make calls, send messages, etc.
+When in doubt, just check all of the channels listed.
+(Channel 2 worked on my Samsung Galaxy s7, see demo below).
 
 # Demo
 
