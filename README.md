@@ -51,7 +51,7 @@ Here's a good reference I found for AT commands: https://www.sparkfun.com/datash
 (Note that your phone may not support all of the AT commands listed in the reference guide.)
 
 If running the above command doesn't work, you probably need to figure out the right channel to use.
-If I remember correctly, the default channel used is 17 or something.
+The default channel used is 17 (see [src/bluesnarfer.c#L59](https://github.com/kimbo/bluesnarfer/blob/kali/master/src/bluesnarfer.c#L59)).
 
 To see what channels are available, I used the `sdptool`:
 ```
