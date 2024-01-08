@@ -6,7 +6,10 @@
         Authors: Roberto Martelloni "boos", Davide Del Vecchio "Dante
    Alighieri".. Email : r.martelloni2003@libero.it, dante@alighieri.org ..
 
-        
+        
+
+
+
         TODO:
         - REWRITE ALL the code in a better way ..
         - add sms (mms?)
@@ -181,7 +184,7 @@ void usage(char *bin) {
                 "TYPE      : valid phonebook type ..\n"
                 "example   : \"DC\" (dialed call list)\n"
                 "            \"SM\" (SIM phonebook)\n"
-                "            \"RC\" (recevied call list)\n"
+                "            \"RC\" (received call list)\n"
                 "            \"XX\" much more\n\n"
                 "-b bdaddr : bluetooth device address\n"
                 "-C chan   : bluetooth rfcomm channel\n\n"
